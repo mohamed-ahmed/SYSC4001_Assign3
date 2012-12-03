@@ -32,24 +32,32 @@ int main(void)
   int msgqid;
  
   struct msgbuf_st msg_buf; //To be used by msgrcv
+  msg_buf.mtype = 16;
   strncpy(msg_buf.data.source, "6134445555", NUM_LEN);
-  strncpy(msg_buf.data.msgstr, "Hello!", MSGSTR_LEN);
-  msg_buf.data.msgstr[MSGSTR_LEN - 1] = '\0';
+  //char s[MSGSTR_LEN];
+  //gets(s);
 
-
-  if ((msgqid = msgget(123, 0 )) == -1) { /* connect to the queue */
-    perror("msgget");
-    exit(1);
-  }
+  if ((msgqid = msgget(1234, 0 )) == -1) { /* connect to the queue */
+      perror("msgget");
+      exit(1);
+    }
   else
-    printf("progA: connected to the queue %d. \n", msgqid);
+printf("progA: connected to the queue %d. \n", msgqid);
 
-  if(msgsnd(msgqid, &msg_buf, sizeof(struct data_st), 0) == -1){
-    perror("msgsnd");
-    exit(1);
-  }
-  else{
-    printf("progA: message sent.\n");
+  int i; //for loop iterator
+  for(i =0 ; i < 5 ; i++){
+    printf("progA: Iteration: %d ",i+1 );
+    strncpy(msg_buf.data.msgstr, "Hello!", MSGSTR_LEN);
+    msg_buf.data.msgstr[MSGSTR_LEN - 1] = '\0';
+
+
+    if(msgsnd(msgqid, &msg_buf, MSGSTR_LEN*sizeof(char), 0) == -1){
+      perror("msgsnd");
+      exit(1);
+    }
+    else{
+      printf(" Message sent.\n");
+    }
   }
 
   /*if(msgrcv(msgqid, &msg_buf, sizeof(struct data_st),0, 0) == -1){
