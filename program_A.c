@@ -25,11 +25,15 @@ struct msgbuf_st{
   struct data_st data;
 };
 
+int cnt = 0;  //counts how many iterations of message recieving there have been
+
 int main(void)
 {
 
   /*Initial declarations*/
-  int msgqid;
+  int msgqid, //message queue identifier 
+      ret;  //will hold return value of message recieve
+  char *messages[5] = {"What", "colour", "is", "pandas", "fur?"};
  
   struct msgbuf_st msg_buf; //To be used by msgrcv
   msg_buf.mtype = 16;
@@ -42,12 +46,14 @@ int main(void)
       exit(1);
     }
   else
-printf("progA: connected to the queue %d. \n", msgqid);
+  printf("progA: connected to the queue %d. \n", msgqid);
 
   int i; //for loop iterator
+  char s[1];
   for(i =0 ; i < 5 ; i++){
+    gets(s);
     printf("progA: Iteration: %d ",i+1 );
-    strncpy(msg_buf.data.msgstr, "Hello!", MSGSTR_LEN);
+    strncpy(msg_buf.data.msgstr, messages[i], MSGSTR_LEN);
     msg_buf.data.msgstr[MSGSTR_LEN - 1] = '\0';
 
 
@@ -57,6 +63,22 @@ printf("progA: connected to the queue %d. \n", msgqid);
     }
     else{
       printf(" Message sent.\n");
+    }
+  }
+
+  for(;cnt<5;){
+    printf("\nprogA: Iteration: %d ",cnt + 1);
+      ret = msgrcv(msgqid, &msg_buf, sizeof(struct data_st), 0, 0);
+    if(ret == -1 ){
+      perror("msgrcv");
+      exit(1);
+    }
+    else{
+      printf(" message received.\n");
+      printf("progA: Received %d bytes from message queue.\n", ret);
+      printf("progA: Message payload: Source: %s\n", msg_buf.data.source);
+      printf("progA: Message payload: Message string: \"%s\"\n", msg_buf.data.msgstr);
+      cnt++;
     }
   }
 
